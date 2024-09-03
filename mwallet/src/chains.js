@@ -1,7 +1,7 @@
 const Ethereum = {
     hex: '0x1',
     name: 'Ethereum',
-    rpcUrl: '',
+    rpcUrl: 'https://eth.drpc.org/',
     ticker: "ETH"
 };
 
@@ -19,8 +19,16 @@ const Amoy = {
     ticker: "MATIC"
 };
 
+const ChronicleLitProtocolTestnet = {  
+    hex: '0x2ac49',
+    name: 'Chronicle - Lit Protocol Testnet',
+    rpcUrl: 'https://175188.rpc.thirdweb.com/${THIRDWEB_API_KEY}',  
+    ticker: "tstLIT"
+};
+
 export const CHAINS_CONFIG = {
     "0x1": Ethereum,
     "0x13881": MumbaiTestnet,
     "0x13882": Amoy,
+    "0x2ac49" : ChronicleLitProtocolTestnet,
 };

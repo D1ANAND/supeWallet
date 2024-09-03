@@ -65,6 +65,7 @@ export async function mintPKPUsingEthWallet() {
         );
 
     console.log("Auth method A added: ", isPermittedA);
+    
 
     return mintedPkp.pkp;
 }
@@ -100,14 +101,14 @@ export async function transferPKPToItself() {
 }
 
 
-export async function fundPKP() {
+export async function fundPKP(value) {
     console.log("funding started..");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const ethersSigner = provider.getSigner();
 
     const fundPkpTxReceipt = await ethersSigner.sendTransaction({
         to: newlyMintedPKP.ethAddress,
-        value: ethers.utils.parseEther("0.00003"),
+        value: ethers.utils.parseEther(value),
     });
 
     await fundPkpTxReceipt.wait();

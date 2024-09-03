@@ -23,36 +23,17 @@ function App() {
   const [seedPhrase, setSeedPhrase] = useState(null);
   const [selectedChain, setSelectedChain] = useState("0x13882");
   const [ethAddress, setEthAddress] = useState("");
-  // var num = prompt("number? ");
-
   
-  let s1 = "send" || "dxsl";
-  let amt = 5;
-  let xyz = "0xe8FA5C28CA55B1DFBb6BCDBAcE5A6F22F487d662";
-
-  // const verify = async(s1,amt,xyz) => {
-  //     if(s1 === "send" || s1 === "transfer"){
-
-  //     }
-  // }
 
     async function mintPKPCall() {
-            if(s1 === "send" || s1 === "transfer"){
               const pkp = await mintPKPUsingEthWallet();
               setEthAddress(pkp?.ethAddress);
       }
-      else {
-        console.log("please enter the correct prompt");
-      }
-
-  }
-
-
-
+  
   return (
     <div className="App">
       <header>
-        {/* <div>
+        <div>
         <h2>LIT DEMO</h2>
 
 <p>pkp eth address, {ethAddress}</p>
@@ -74,7 +55,7 @@ function App() {
 <button onClick={seeAuthMethods}>See Permitted Method</button>
 
 <button onClick={pkpSignTx}>PKP Sign</button>
-        </div> */}
+        </div>
         <img src={logo} className="headerLogo" alt="logo" />
         <Select
           onChange={(val) => setSelectedChain(val)}
@@ -93,8 +74,8 @@ function App() {
               value: "0x13882",
             },
             {
-              label: "Avalanche",
-              value: "0xa86a",
+              label: "Chronicle-Lit Protocol Testnet",
+              value: "0x2ac49",
             },
           ]}
           className="dropdown"

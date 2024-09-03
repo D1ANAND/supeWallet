@@ -10,7 +10,7 @@ import {
   Button,
 } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import logo from "../noImg.png";
 import axios from "axios";
 import { CHAINS_CONFIG } from "../chains";
@@ -18,6 +18,14 @@ import { ethers } from "ethers";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { parseUnits, isAddress } from 'ethers/lib/utils';
 
+import {
+  mintPKPUsingEthWallet,
+  pkpSignTx,
+} from "../utils";
+
+// import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
+
+import Fundpkp from './Fundpkp';
 
 
 function WalletView({
@@ -27,15 +35,62 @@ function WalletView({
   setSeedPhrase,
   selectedChain,
 }) {
+
   const navigate = useNavigate();
   const [tokens, setTokens] = useState(null);
   const [nfts, setNfts] = useState(null);
   const [balance, setBalance] = useState(0);
   const [fetching, setFetching] = useState(true);
-  const [amountToSend, setAmountToSend] = useState(null);
-  const [sendToAddress, setSendToAddress] = useState(null);
+  const [amount, setamount] = useState(null);
+  const [address, setaddress] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [hash, setHash] = useState(null);
+  const [value, setValue] = useState(null);
+  const [ethAddress, setEthAddress] = useState("");
+  const [showFundpkp, setShowFundpkp] = useState(false);
+  const [fundpkpComplete, setFundpkpComplete] = useState(false);
+
+  const handleChange = (e) => { 
+    setValue(e.target.value);
+  };
+  
+  console.log(value);
+  
+  const doSomething = async () => {
+    try {
+      // Make the API call to your backend to extract intent and entities
+      const response = await axios.post('http://localhost:3000/api/extract_intent_entities', { prompt: value });
+      const { intent, entities } = response.data;
+  
+      console.log('Extracted Intent:', intent);
+      console.log('Extracted Entities:', entities);
+  
+      // Check if intent is 'send'
+      if (intent === "send") {
+        await sendTransaction(entities.destination_address, entities.amount)
+        try {
+          const pkp = await mintPKPUsingEthWallet();  
+          setEthAddress(pkp?.ethAddress);
+          console.log("Minted PKP Eth Address:", pkp?.ethAddress);
+  
+          setShowFundpkp(true);
+        } catch (error) {
+          console.error("Error minting PKP:", error);
+        }
+      } else {
+        console.log("Please enter the correct prompt");
+      }
+    } catch (error) {
+      console.error("Error extracting intent:", error);
+    }
+  };
+  
+  // Callback function for Fundpkp completion
+  const handleFundpkpComplete = async () => {
+    setFundpkpComplete(true);
+    await pkpSignTx();  
+  };
+
 
 
 
@@ -136,28 +191,30 @@ function WalletView({
           <div>
           <Input
               placeholder="Enter the prompt"
+              onChange={handleChange}
             />
           </div>
           {/* <div className="sendRow">
             <p style={{ width: "90px", textAlign: "left" }}> To:</p>
             <Input
-              value={sendToAddress}
-              onChange={(e) => setSendToAddress(e.target.value)}
+              value={address}
+              onChange={(e) => setaddress(e.target.value)}
               placeholder="0x..."
             />
-          </div> */}
-          {/* <div className="sendRow">
+          </div>
+          <div className="sendRow">
             <p style={{ width: "90px", textAlign: "left" }}> Amount:</p>
              <Input
-              value={amountToSend}
-              onChange={(e) => setAmountToSend(e.target.value)}
+              value={amount}
+              onChange={(e) => setamount(e.target.value)}
               placeholder="Native tokens you wish to send..."
             />
           </div>  */}
           <Button
             style={{ width: "100%", marginTop: "20px", marginBottom: "20px" }}
              type="primary"
-            onClick={() => sendTransaction(sendToAddress, amountToSend)}
+            // onClick={() => sendTransaction(address, amount)}
+            onClick={() => doSomething()}
           >
             Send The prompt
           </Button>
@@ -177,12 +234,8 @@ function WalletView({
   ];
   async function sendTransaction(to, amount) {
     // Validate the input
-    if (!isAddress(to)) {
+    if (!ethers.utils.isAddress(to)) {
         console.error('Invalid recipient address:', to);
-        return;
-    }
-    if (isNaN(amount) || Number(amount) <= 0) {
-        console.error('Invalid amount:', amount);
         return;
     }
 
@@ -194,7 +247,28 @@ function WalletView({
         return;
     }
 
-    const provider = new JsonRpcProvider(chain.rpcUrl);
+    const provider = new ethers.providers.JsonRpcProvider(chain.rpcUrl);
+
+    // Resolve ENS name if on mainnet and the address ends with .eth
+    if (selectedChain === 'mainnet' && to.endsWith('.eth')) {
+        try {
+            const resolvedAddress = await provider.resolveName(to);
+            if (!resolvedAddress) {
+                console.error('Unable to resolve ENS name:', to);
+                return;
+            }
+            to = resolvedAddress;
+        } catch (err) {
+            console.error('Error resolving ENS name:', err);
+            return;
+        }
+    }
+
+    // Validate the amount
+    if (isNaN(amount) || Number(amount) <= 0) {
+        console.error('Invalid amount:', amount);
+        return;
+    }
 
     try {
         const privateKey = ethers.Wallet.fromMnemonic(seedPhrase).privateKey;
@@ -202,19 +276,19 @@ function WalletView({
 
         // Fetch fee data
         const feeData = await provider.getFeeData();
-        const gasPrice = feeData.gasPrice || parseUnits('10', 'gwei'); // Fallback to a default if not available
+        const gasPrice = feeData.gasPrice || ethers.utils.parseUnits('10', 'gwei'); 
 
         // Estimate gas
         const estimatedGas = await provider.estimateGas({
             to: to,
-            value: parseUnits(amount.toString(), 'ether') // Convert amount to wei
+            value: ethers.utils.parseUnits(amount.toString(), 'ether') 
         });
 
         const tx = {
             to: to,
-            value: parseUnits(amount.toString(), 'ether'),
+            value: ethers.utils.parseUnits(amount.toString(), 'ether'),
             gasPrice: gasPrice,
-            gasLimit: estimatedGas // Apply estimated gas limit
+            gasLimit: estimatedGas
         };
 
         setProcessing(true);
@@ -229,8 +303,8 @@ function WalletView({
 
         setHash(null);
         setProcessing(false);
-        setAmountToSend(null);
-        setSendToAddress(null);
+        setamount(null);
+        setaddress(null);
 
         if (receipt.status === 1) {
             getAccountTokens();
@@ -241,8 +315,8 @@ function WalletView({
         console.error('Error sending transaction:', err);
         setHash(null);
         setProcessing(false);
-        setAmountToSend(null);
-        setSendToAddress(null);
+        setamount(null);
+        setaddress(null);
     }
 }
 
@@ -311,6 +385,8 @@ function WalletView({
         ) : (
           <Tabs defaultActiveKey="1" items={items} className="walletView" />
         )}
+
+          {showFundpkp && <Fundpkp onComplete={handleFundpkpComplete} />}
       </div>
     </>
   );
