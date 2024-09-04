@@ -851,6 +851,6 @@ export const DestinationMinterABI = `[
 		"stateMutability": "pure",
 		"type": "function"
 	}
-]`
+]`;
 
 
