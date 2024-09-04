@@ -33,7 +33,7 @@ function App() {
   return (
     <div className="App">
       <header>
-        <div>
+        {/* <div>
         <h2>LIT DEMO</h2>
 
 <p>pkp eth address, {ethAddress}</p>
@@ -55,7 +55,7 @@ function App() {
 <button onClick={seeAuthMethods}>See Permitted Method</button>
 
 <button onClick={pkpSignTx}>PKP Sign</button>
-        </div>
+        </div> */}
         <img src={logo} className="headerLogo" alt="logo" />
         <Select
           onChange={(val) => setSelectedChain(val)}

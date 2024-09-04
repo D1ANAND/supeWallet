@@ -23,6 +23,8 @@ import {
   pkpSignTx,
 } from "../utils";
 
+// import {Home} from "../pages/Encrypt";
+
 // import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
 
 import Fundpkp from './Fundpkp';
@@ -229,6 +231,7 @@ function WalletView({
             </>
           )}
         </>
+        
       ),
     },
   ];
