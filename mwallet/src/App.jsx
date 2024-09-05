@@ -17,6 +17,7 @@ import {
   seeAuthMethods,
   pkpSignTx,
 } from "./utils";
+import FileUpload from "./components/FileUpload";
 
 function App() {
   const [wallet, setWallet] = useState(null);
@@ -119,6 +120,7 @@ function App() {
           />
         </Routes>
       )}
+     {/* <FileUpload /> */}
     </div>
   );
 }

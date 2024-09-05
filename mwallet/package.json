@@ -33,7 +33,8 @@
         "stream-browserify": "^3.0.0",
         "vm-browserify": "^1.1.2",
         "web-vitals": "^2.1.4",
-        "web3modal": "^1.9.12"
+        "web3modal": "^1.9.12",
+        "ipfs-http-client": "^60.0.1"
     },
     "scripts": {
         "start": "craco start react-scripts start",

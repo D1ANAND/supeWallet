@@ -50,8 +50,8 @@ function Home() {
         >
           Sign In With Seed Phrase
         </Button>
-        <button onClick={handleOwnership}>transfer</button>
-        <button onClick={handleMint} className="ml-12">mint</button>
+        {/* <button onClick={handleOwnership}>transfer</button>
+        <button onClick={handleMint} className="ml-12">mint</button> */}
       </div>
      
     </>

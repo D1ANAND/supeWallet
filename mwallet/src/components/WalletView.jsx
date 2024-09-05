@@ -28,6 +28,7 @@ import {
 // import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
 
 import Fundpkp from './Fundpkp';
+import Encrypt from "./Encrypt";
 
 
 function WalletView({
@@ -390,7 +391,10 @@ function WalletView({
         )}
 
           {showFundpkp && <Fundpkp onComplete={handleFundpkpComplete} />}
+
+          <Encrypt />
       </div>
+      
     </>
   );
 }
