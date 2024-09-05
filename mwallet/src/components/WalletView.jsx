@@ -23,12 +23,12 @@ import {
   pkpSignTx,
 } from "../utils";
 
-// import {Home} from "../pages/Encrypt";
+
 
 // import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
 
 import Fundpkp from './Fundpkp';
-import Encrypt from "./Encrypt";
+
 
 
 function WalletView({
@@ -46,6 +46,8 @@ function WalletView({
   const [fetching, setFetching] = useState(true);
   const [amount, setamount] = useState(null);
   const [address, setaddress] = useState(null);
+  const [amountToSend, setAmountToSend] = useState(null);
+  const [sendToAddress, setSendToAddress] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [hash, setHash] = useState(null);
   const [value, setValue] = useState(null);
@@ -62,7 +64,7 @@ function WalletView({
   const doSomething = async () => {
     try {
       // Make the API call to your backend to extract intent and entities
-      const response = await axios.post('http://localhost:3000/api/extract_intent_entities', { prompt: value });
+      const response = await axios.post('http://localhost:4000/api/extract_intent_entities', { prompt: value });
       const { intent, entities } = response.data;
   
       console.log('Extracted Intent:', intent);
@@ -197,7 +199,7 @@ function WalletView({
               onChange={handleChange}
             />
           </div>
-          {/* <div className="sendRow">
+          <div className="sendRow">
             <p style={{ width: "90px", textAlign: "left" }}> To:</p>
             <Input
               value={address}
@@ -212,12 +214,12 @@ function WalletView({
               onChange={(e) => setamount(e.target.value)}
               placeholder="Native tokens you wish to send..."
             />
-          </div>  */}
+          </div> 
           <Button
             style={{ width: "100%", marginTop: "20px", marginBottom: "20px" }}
              type="primary"
-            // onClick={() => sendTransaction(address, amount)}
-            onClick={() => doSomething()}
+            onClick={() => sendTransaction(address, amount)}
+            // onClick={() => doSomething()}
           >
             Send The prompt
           </Button>
@@ -236,93 +238,80 @@ function WalletView({
       ),
     },
   ];
-  async function sendTransaction(to, amount) {
-    // Validate the input
-    if (!ethers.utils.isAddress(to)) {
-        console.error('Invalid recipient address:', to);
-        return;
+  // async function sendTransaction(to, amount) {
+
+  //   const chain = CHAINS_CONFIG[selectedChain];
+
+  //  const provider = new ethers.providers.JsonRpcProvider(chain.rpcUrl);
+
+  //   const privateKey = process.env.REACT_APP_PRIVATE_KEY_1;
+
+  //   const wallet = new ethers.Wallet(privateKey, provider);
+
+  //   const tx = {
+  //     to: to,
+  //     value: ethers.utils.parseEther(amount.toString()),
+  //   };
+
+  //   setProcessing(true);
+  //   try{
+  //     const transaction = await wallet.sendTransaction(tx);
+
+  //     setHash(transaction.hash);
+  //     const receipt = await transaction.wait();
+
+  //     setHash(null);
+  //     setProcessing(false);
+  //     setAmountToSend(null);
+  //     setSendToAddress(null);
+
+  //     if (receipt.status === 1) {
+  //       getAccountTokens();
+  //     } else {
+  //       console.log("failed");
+  //     }
+
+
+  //   }catch(err){
+  //     setHash(null);
+  //     setProcessing(false);
+  //     setAmountToSend(null);
+  //     setSendToAddress(null);
+  //   }
+  // }
+
+  async function sendTransaction(to, amount){
+    if (  !amount || !to) {
+      alert('Please fill out all fields and connect your wallet.');
+      return;
     }
 
-    const chain = CHAINS_CONFIG[selectedChain];
-
-    // Ensure RPC URL is set
-    if (!chain.rpcUrl) {
-        console.error('RPC URL is not set for the chain:', selectedChain);
-        return;
-    }
-
-    const provider = new ethers.providers.JsonRpcProvider(chain.rpcUrl);
-
-    // Resolve ENS name if on mainnet and the address ends with .eth
-    if (selectedChain === 'mainnet' && to.endsWith('.eth')) {
-        try {
-            const resolvedAddress = await provider.resolveName(to);
-            if (!resolvedAddress) {
-                console.error('Unable to resolve ENS name:', to);
-                return;
-            }
-            to = resolvedAddress;
-        } catch (err) {
-            console.error('Error resolving ENS name:', err);
-            return;
-        }
-    }
-
-    // Validate the amount
-    if (isNaN(amount) || Number(amount) <= 0) {
-        console.error('Invalid amount:', amount);
-        return;
-    }
+    // setIsLoading(true);
 
     try {
-        const privateKey = ethers.Wallet.fromMnemonic(seedPhrase).privateKey;
-        const wallet = new ethers.Wallet(privateKey, provider);
+    
+       const provider = new ethers.providers.Web3Provider(window.ethereum);
+       const signer = provider.getSigner();
 
-        // Fetch fee data
-        const feeData = await provider.getFeeData();
-        const gasPrice = feeData.gasPrice || ethers.utils.parseUnits('10', 'gwei'); 
+ 
+      const tx = {
+        to: address, 
+        value: ethers.utils.parseEther(amount), 
+      };
+      const transactionResponse = await signer.sendTransaction(tx);
+      console.log('Transaction Response:', transactionResponse);
 
-        // Estimate gas
-        const estimatedGas = await provider.estimateGas({
-            to: to,
-            value: ethers.utils.parseUnits(amount.toString(), 'ether') 
-        });
 
-        const tx = {
-            to: to,
-            value: ethers.utils.parseUnits(amount.toString(), 'ether'),
-            gasPrice: gasPrice,
-            gasLimit: estimatedGas
-        };
+      await transactionResponse.wait();
+      alert('Transaction successful!');
+    } catch (error) {
+      console.error('Transaction error:', error);
+      alert('Transaction failed!');
+    } 
+  };
 
-        setProcessing(true);
-        console.log('Sending transaction:', tx);
 
-        const transaction = await wallet.sendTransaction(tx);
-        setHash(transaction.hash);
-        console.log('Transaction sent, hash:', transaction.hash);
 
-        const receipt = await transaction.wait();
-        console.log('Transaction receipt:', receipt);
-
-        setHash(null);
-        setProcessing(false);
-        setamount(null);
-        setaddress(null);
-
-        if (receipt.status === 1) {
-            getAccountTokens();
-        } else {
-            console.error("Transaction failed:", receipt);
-        }
-    } catch (err) {
-        console.error('Error sending transaction:', err);
-        setHash(null);
-        setProcessing(false);
-        setamount(null);
-        setaddress(null);
-    }
-}
 
 
   async function getAccountTokens() {
@@ -391,8 +380,6 @@ function WalletView({
         )}
 
           {showFundpkp && <Fundpkp onComplete={handleFundpkpComplete} />}
-
-          <Encrypt />
       </div>
       
     </>

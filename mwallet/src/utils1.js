@@ -12,7 +12,7 @@ const DestinationMinter_contractAddress = "0xB4655038272D0451200aa52729075F88316
 const SourceMinter_contractAddress = "0x8557892bC88E53fbfB273430D5cf3F44EBaD65eB";
 
 const privateKey = process.env.REACT_APP_PRIVATE_KEY_1;
-const AlchemyProjectId = process.env.AlLCHEMY_PROJECT_ID;
+const AlchemyProjectId = process.env.ALCHEMY_PROJECT_ID;
 
 // Network switching functions
 export async function switchNetworkToAmoy() {

@@ -2,7 +2,6 @@ import React from "react";
 import mwallet from "../mwallet.png";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import Encrypt from "./Encrypt";
 import { transerOwnership ,mintNFTCrossChain} from "../utils1";
 
 function Home() {
