@@ -64,7 +64,7 @@ function WalletView({
   const doSomething = async () => {
     try {
       // Make the API call to your backend to extract intent and entities
-      const response = await axios.post('http://localhost:4000/api/extract_intent_entities', { prompt: value });
+      const response = await axios.post('http://localhost:4000/', { prompt: value });
       const { intent, entities } = response.data;
   
       console.log('Extracted Intent:', intent);
@@ -199,7 +199,7 @@ function WalletView({
               onChange={handleChange}
             />
           </div>
-          <div className="sendRow">
+          {/* <div className="sendRow">
             <p style={{ width: "90px", textAlign: "left" }}> To:</p>
             <Input
               value={address}
@@ -214,12 +214,12 @@ function WalletView({
               onChange={(e) => setamount(e.target.value)}
               placeholder="Native tokens you wish to send..."
             />
-          </div> 
+          </div>  */}
           <Button
             style={{ width: "100%", marginTop: "20px", marginBottom: "20px" }}
              type="primary"
-            onClick={() => sendTransaction(address, amount)}
-            // onClick={() => doSomething()}
+            // onClick={() => sendTransaction(address, amount)}
+            onClick={() => doSomething()}
           >
             Send The prompt
           </Button>

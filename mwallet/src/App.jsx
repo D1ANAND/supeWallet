@@ -8,6 +8,7 @@ import CreateAccount from "./components/CreateAccount";
 import RecoverAccount from "./components/RecoverAccount";
 import WalletView from "./components/WalletView";
 
+
 import {
   mintPKPUsingEthWallet,
   transferPKPToItself,
@@ -29,6 +30,11 @@ function App() {
     async function mintPKPCall() {
               const pkp = await mintPKPUsingEthWallet();
               setEthAddress(pkp?.ethAddress);
+      }
+
+      const handleClick = async() => {
+         const main = await main();
+         console.log(main);
       }
   
   return (
@@ -124,7 +130,7 @@ function App() {
           />
         </Routes>
       )}
-     {/* <FileUpload /> */}
+     <FileUpload />
     </div>
   );
 }

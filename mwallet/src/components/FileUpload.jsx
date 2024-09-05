@@ -145,16 +145,36 @@ function FileUpload() {
   
       // Log authSig for debugging
       console.log('Auth Signature:', authSig);
+
+         
+      const accs = [
+        {
+          contractAddress: '',
+          standardContractType: '',
+          chain: 'ethereum',
+          method: 'eth_getBalance',
+          parameters: [':userAddress', 'latest'],
+          returnValueTest: {
+            comparator: '>=',
+            value: '0',
+          },
+        },
+      ];
   
       // Verify that authSig is valid
       if (!authSig || !authSig.signature || !authSig.publicKey) {
         throw new Error('Invalid authSig');
       }
+
+      const signnature = await litNodeClient.signSessionKey();
   
       const { decryptedFile, metadata } = await LitJsSdk.decryptZipFileWithMetadata({
+        // accessControlConditions: accs,
+        chain: 'ethereum',
         file: file,
-        litNodeClient: litNodeClient,
-        authSig: authSig,  
+        litNodeClient: litNodeClient, 
+        decryptCid,
+        signnature
       });
   
       // Create a download link for the decrypted file

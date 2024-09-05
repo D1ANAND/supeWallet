@@ -29,7 +29,8 @@ const ChronicleLitProtocolTestnet = {
 const Sepolia = {
     hex:'0xaa36a7',
     name:'Ethereum Sepolia',
-    rpcUrl: 'https://rpc.sepolia.org/'
+    rpcUrl: 'https://rpc.sepolia.org/',
+    ticker:"SepoliaETH"
 };
 
 export const CHAINS_CONFIG = {
