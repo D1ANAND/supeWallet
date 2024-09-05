@@ -23,12 +23,10 @@ import {
   pkpSignTx,
 } from "../utils";
 
-
-
 // import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
 
 import Fundpkp from './Fundpkp';
-
+// import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
 
 
 function WalletView({
@@ -64,15 +62,20 @@ function WalletView({
   const doSomething = async () => {
     try {
       // Make the API call to your backend to extract intent and entities
-      const response = await axios.post('http://localhost:4000/', { prompt: value });
-      const { intent, entities } = response.data;
+      // const response = await axios.post('http://localhost:4000/', { prompt: value });
+      // const { intent, entities } = response.data;
   
-      console.log('Extracted Intent:', intent);
-      console.log('Extracted Entities:', entities);
+      // console.log('Extracted Intent:', intent);
+      // console.log('Extracted Entities:', entities);
+
+      // main()
+      // .then(() => console.log("Done"))
   
+      const intent = "send";
+      
       // Check if intent is 'send'
       if (intent === "send") {
-        await sendTransaction(entities.destination_address, entities.amount)
+        await sendTransaction(address,amount)
         try {
           const pkp = await mintPKPUsingEthWallet();  
           setEthAddress(pkp?.ethAddress);

@@ -130,7 +130,7 @@ function App() {
           />
         </Routes>
       )}
-     <FileUpload />
+     {/* <FileUpload /> */}
     </div>
   );
 }
