@@ -78,6 +78,10 @@ function App() {
               label: "Chronicle-Lit Protocol Testnet",
               value: "0x2ac49",
             },
+            {
+              label: "Ethereum Sepolia",
+              value: "0xaa36a7",
+            },
           ]}
           className="dropdown"
         ></Select>

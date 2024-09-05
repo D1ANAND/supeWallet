@@ -26,6 +26,12 @@ const ChronicleLitProtocolTestnet = {
     ticker: "tstLIT"
 };
 
+const Sepolia = {
+    hex:'0xaa36a7',
+    name:'Ethereum Sepolia',
+    rpcUrl: 'https://rpc.sepolia.org/'
+};
+
 export const CHAINS_CONFIG = {
     "0x1": Ethereum,
     "0x13881": MumbaiTestnet,
