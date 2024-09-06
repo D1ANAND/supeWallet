@@ -27,6 +27,7 @@ import {
 
 import Fundpkp from './Fundpkp';
 // import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
+import {main} from "../sendintent";
 
 
 function WalletView({
@@ -57,41 +58,81 @@ function WalletView({
     setValue(e.target.value);
   };
   
-  console.log(value);
-  
+
   const doSomething = async () => {
     try {
-      // Make the API call to your backend to extract intent and entities
-      // const response = await axios.post('http://localhost:4000/', { prompt: value });
-      // const { intent, entities } = response.data;
-  
-      // console.log('Extracted Intent:', intent);
-      // console.log('Extracted Entities:', entities);
-
-      // main()
-      // .then(() => console.log("Done"))
-  
-      const intent = "send";
-      
-      // Check if intent is 'send'
-      if (intent === "send") {
-        await sendTransaction(address,amount)
-        try {
-          const pkp = await mintPKPUsingEthWallet();  
-          setEthAddress(pkp?.ethAddress);
-          console.log("Minted PKP Eth Address:", pkp?.ethAddress);
-  
-          setShowFundpkp(true);
-        } catch (error) {
-          console.error("Error minting PKP:", error);
-        }
-      } else {
-        console.log("Please enter the correct prompt");
+      const intent1 = value;  // Use the input value entered by the user
+      if (!intent1) {
+        console.log("Please enter a prompt");
+        return;
       }
+  
+      // Call the main function with the user's prompt
+      const response = await main(intent1);  // Assuming main is imported correctly
+      console.log("Main Function Response (String):", response);
+  
+      // Convert the response string to a JSON object
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(response);
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError);
+        return;
+      }
+  
+      console.log('Parsed Response (Object):', parsedResponse);
+      console.log('Response Structure:', JSON.stringify(parsedResponse, null, 2));
+  
+      // Destructure the parsed response to get intent and entities
+      const { intent, entities } = parsedResponse;
+  
+      console.log('Extracted Intent:', intent);
+      console.log('Extracted Entities:', entities);
+  
+      // Check if intent and entities are valid
+      if (!intent || !entities) {
+        console.log("Invalid intent or entities in response");
+        return;
+      }
+  
+      // Extract the address, amount, and currency from the entities object
+      const { address, amount, currency } = entities;
+  
+      console.log("Address:", address);
+      console.log("Amount:", amount);
+      console.log("Currency:", currency);
+  
+      // Perform the action based on the extracted intent
+      if (intent === "send_crypto" || intent === "send") {
+        // Use the extracted address and amount
+        // const recipientAddress = "0x49C2E4DB36D3AC470ad072ddC17774257a043097";
+        // const transactionAmount = amount;
+  
+        // Handle the transaction (with optional currency handling)
+        await sendTransaction(address, amount);
+      } else {
+        console.log("No valid action extracted from the prompt.");
+      }
+  
     } catch (error) {
-      console.error("Error extracting intent:", error);
+      console.error("Error during processing:", error);
     }
   };
+  
+
+  // Function to extract intent and entities like address and amount from the response
+  // const extractEntities = (response) => {
+  //   // Assuming the response is in JSON format and contains intent, address, and amount
+  //   const intentType = response.intent ;
+  //   console.log(intentType);
+  //   const address = response.address;
+  //   console.log(address);
+  //   const amount = response.amount ;
+  //   console.log(amount);
+  //   return { intentType, address, amount };
+  // };
+  
+
   
   // Callback function for Fundpkp completion
   const handleFundpkpComplete = async () => {
@@ -283,39 +324,35 @@ function WalletView({
   //   }
   // }
 
-  async function sendTransaction(to, amount){
-    if (  !amount || !to) {
+  async function sendTransaction(to, amount) {
+    if (!amount || !to) {
       alert('Please fill out all fields and connect your wallet.');
       return;
     }
-
-    // setIsLoading(true);
-
+  
     try {
-    
-       const provider = new ethers.providers.Web3Provider(window.ethereum);
-       const signer = provider.getSigner();
-
- 
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+  
+      // Create transaction object
       const tx = {
-        to: address, 
-        value: ethers.utils.parseEther(amount), 
+        to: to, // Use the 'to' parameter passed into the function
+        value: ethers.utils.parseEther(amount), // Convert amount to ethers
       };
+  
+      // Send transaction
       const transactionResponse = await signer.sendTransaction(tx);
       console.log('Transaction Response:', transactionResponse);
-
-
+  
+      // Wait for transaction confirmation
       await transactionResponse.wait();
       alert('Transaction successful!');
     } catch (error) {
       console.error('Transaction error:', error);
       alert('Transaction failed!');
-    } 
-  };
-
-
-
-
+    }
+  }
+  
 
   async function getAccountTokens() {
     setFetching(true);
