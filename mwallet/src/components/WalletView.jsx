@@ -26,9 +26,13 @@ import {
 // import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
 
 import Fundpkp from './Fundpkp';
+import FileUpload from './FileUpload';
 // import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
 import {mintNFTCrossChain} from "../utils1";
 import {main} from "../galadriel-functions/sendintent";
+import * as LitJsSdk from "@lit-protocol/lit-node-client";
+import { LitNodeClient } from "@lit-protocol/lit-node-client";
+import { AuthMethodScope, LitNetwork } from "@lit-protocol/constants";
 
 
 
@@ -55,9 +59,21 @@ function WalletView({
   const [ethAddress, setEthAddress] = useState("");
   const [showFundpkp, setShowFundpkp] = useState(false);
   const [fundpkpComplete, setFundpkpComplete] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [fileUrl, setFileUrl] = useState(null);
+
+  // Add these state variables to your existing useState hooks
+const [file, setFile] = useState(null);
+const [cid, setCid] = useState('');
+const [encrypted, setEncrypted] = useState(false);
+const [decryptCid, setDecryptCid] = useState(null);
 
   const handleChange = (e) => { 
     setValue(e.target.value);
+  };
+
+   const handleFileChange = (e) => {
+    setFile(e.target.files[0]); // Get the first selected file
   };
   
 
@@ -116,6 +132,13 @@ function WalletView({
       else if (intent === "MintNFT" || intent === "mintNFT" || intent === "mint_nft" || intent === "mint_NFT") {
           await mintNFTCrossChain();
       }
+      else if (intent === "encrypt" || intent === "encrypt_file" || intent === "encryptFile" || "EncryptFile"){
+        if (!file) {
+          alert("Please select a file to encrypt.");
+          return;
+        }
+        await handleEncrypt(file);
+      }
       else {
         console.log("No valid action extracted from the prompt.");
       }
@@ -145,6 +168,158 @@ function WalletView({
     setFundpkpComplete(true);
     await pkpSignTx();  
   };
+
+
+  //for encryption and upload to ipfs 
+
+  
+ const handleEncrypt = async (fileToEncrypt) => {
+  try {
+    setProcessing(true);
+
+    // Connect to Lit Protocol
+    const client = new LitNodeClient({
+      litNetwork: 'cayenne',
+      debug: false
+    });
+    await client.connect();
+    console.log('Connected to Lit Network', client);
+
+    // Authenticate with Lit Protocol
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
+    console.log('Auth Signature:', authSig);
+
+    // Define Access Control Conditions (Customize as needed)
+    const accs = [
+      {
+        contractAddress: '',
+        standardContractType: '',
+        chain: 'ethereum',
+        method: 'eth_getBalance',
+        parameters: [':userAddress', 'latest'],
+        returnValueTest: {
+          comparator: '>=',
+          value: '0',
+        },
+      },
+    ];
+
+    // Encrypt the file
+    const encryptedZip = await LitJsSdk.encryptFileAndZipWithMetadata({
+      accessControlConditions: accs,
+      authSig,
+      chain: 'ethereum',
+      file: fileToEncrypt,
+      litNodeClient: client,
+      readme: "Use IPFS CID of this file to decrypt it"
+    });
+
+    const encryptedBlob = new Blob([encryptedZip], { type: 'application/zip' });
+    const encryptedFile = new File([encryptedBlob], `${fileToEncrypt.name}.encrypted.zip`);
+    console.log("Encrypted file:", encryptedFile);
+
+    // Upload to IPFS via Pinata
+    const formData = new FormData();
+    formData.append('file', encryptedFile);
+
+    const metadata = JSON.stringify({
+      name: encryptedFile.name,
+    });
+    formData.append('pinataMetadata', metadata);
+
+    const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+      maxBodyLength: 'Infinity',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+        pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET_API_KEY,
+      },
+    });
+
+    const ipfsHash = res.data.IpfsHash;
+    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+    setCid(ipfsHash);
+    setFileUrl(ipfsUrl);
+    setEncrypted(true);
+    console.log('Encrypted File uploaded to IPFS via Pinata:', ipfsUrl);
+
+    setProcessing(false);
+    alert(`File encrypted and uploaded successfully! CID: ${ipfsHash}`);
+
+  } catch (error) {
+    console.error('Error during encryption and upload:', error);
+    setProcessing(false);
+    alert("Error during encryption and upload: " + error.message);
+  }
+};
+
+
+const handleDecrypt = async (cidToDecrypt) => {
+  try {
+    setProcessing(true);
+
+    // Connect to Lit Protocol
+    const client = new LitJsSdk.LitNodeClient({
+      litNetwork: 'cayenne',
+      debug: false
+    });
+    await client.connect();
+    console.log('Connected to Lit Network', client);
+
+    // Authenticate with Lit Protocol
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
+    console.log('Auth Signature:', authSig);
+
+    // Fetch the encrypted file from IPFS
+    const response = await fetch(`https://gateway.pinata.cloud/ipfs/${cidToDecrypt}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch file from IPFS');
+    }
+    const encryptedBlob = await response.blob();
+    const encryptedFile = new File([encryptedBlob], `decrypted.zip`);
+
+    // Define Access Control Conditions (Must match encryption conditions)
+    const accs = [
+      {
+        contractAddress: '',
+        standardContractType: '',
+        chain: 'ethereum',
+        method: 'eth_getBalance',
+        parameters: [':userAddress', 'latest'],
+        returnValueTest: {
+          comparator: '>=',
+          value: '0',
+        },
+      },
+    ];
+
+    // Decrypt the file
+    const { decryptedFile, metadata } = await LitJsSdk.decryptZipFileWithMetadata({
+      accessControlConditions: accs,
+      chain: 'ethereum',
+      file: encryptedFile,
+      litNodeClient: client,
+      decryptCid: cidToDecrypt,
+      authSig
+    });
+
+    // Create a download link for the decrypted file
+    const blob = new Blob([decryptedFile], { type: 'application/octet-stream' });
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = metadata.name;
+    downloadLink.click();
+
+    setProcessing(false);
+    alert('File decrypted successfully!');
+
+  } catch (error) {
+    console.error('Error during decryption:', error);
+    setProcessing(false);
+    alert("Error during decryption: " + error.message);
+  }
+};
+
 
 
 
@@ -245,9 +420,68 @@ function WalletView({
 
           <div>
           <Input
-              placeholder="Enter the prompt"
-              onChange={handleChange}
-            />
+        placeholder="Enter the prompt"
+        onChange={handleChange}
+      />
+      <input
+        type="file"
+        onChange={handleFileChange}
+        style={{ marginLeft: '10px' }} // To add some space between the input fields
+      />
+      {file && <p>Selected File: {file.name}</p>}
+
+
+
+      {encrypted && (
+  <div>
+    <h4>Decrypt File</h4>
+    <Input
+      placeholder="Enter CID to decrypt"
+      value={decryptCid}
+      onChange={(e) => setDecryptCid(e.target.value)}
+    />
+    <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
+      Decrypt
+    </Button>
+    {fileUrl && (
+      <div>
+        <h4>Encrypted File URL:</h4>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+          {fileUrl}
+        </a>
+      </div>
+    )}
+  </div>
+)}
+
+
+{/* for decryption */}
+{encrypted && (
+  <div>
+    <h4>Decrypt File</h4>
+    <Input
+      placeholder="Enter CID to decrypt"
+      value={decryptCid}
+      onChange={(e) => setDecryptCid(e.target.value)}
+    />
+    <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
+      Decrypt
+    </Button>
+    {fileUrl && (
+      <div>
+        <h4>Encrypted File URL:</h4>
+        <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+          {fileUrl}
+        </a>
+      </div>
+    )}
+  </div>
+)}
+
+
+
+
+      {/* {showFileUpload && <FileUpload />}  */}
           </div>
           {/* <div className="sendRow">
             <p style={{ width: "90px", textAlign: "left" }}> To:</p>
@@ -273,6 +507,16 @@ function WalletView({
           >
             Send The prompt
           </Button>
+          {encrypted && (
+  <div>
+    <h4>Encrypted File CID:</h4>
+    <p>{cid}</p>
+    <a href={`https://gateway.pinata.cloud/ipfs/${cid}`} target="_blank" rel="noopener noreferrer">
+      View Encrypted File
+    </a>
+  </div>
+)}
+
           {processing && (
             <>
               <Spin />
