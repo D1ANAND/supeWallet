@@ -27,7 +27,9 @@ import {
 
 import Fundpkp from './Fundpkp';
 // import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
-import {main} from "../sendintent";
+import {mintNFTCrossChain} from "../utils1";
+import {main} from "../galadriel-functions/sendintent";
+
 
 
 function WalletView({
@@ -110,7 +112,11 @@ function WalletView({
   
         // Handle the transaction (with optional currency handling)
         await sendTransaction(address, amount);
-      } else {
+      } 
+      else if (intent === "MintNFT" || intent === "mintNFT" || intent === "mint_nft" || intent === "mint_NFT") {
+          await mintNFTCrossChain();
+      }
+      else {
         console.log("No valid action extracted from the prompt.");
       }
   
@@ -427,6 +433,3 @@ function WalletView({
 }
 
 export default WalletView;
-
-
-
