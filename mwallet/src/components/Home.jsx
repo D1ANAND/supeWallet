@@ -4,6 +4,7 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { transerOwnership ,mintNFTCrossChain} from "../utils1";
 
+
 function Home() {
   const navigate = useNavigate();
 
@@ -51,6 +52,7 @@ function Home() {
         </Button>
         {/* <button onClick={handleOwnership}>transfer</button>
         <button onClick={handleMint} className="ml-12">mint</button> */}
+        {/* <UploadAndMint /> */}
       </div>
      
     </>

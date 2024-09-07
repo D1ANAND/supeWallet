@@ -15,16 +15,11 @@ import logo from "../noImg.png";
 import axios from "axios";
 import { CHAINS_CONFIG } from "../chains";
 import { ethers } from "ethers";
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { parseUnits, isAddress } from 'ethers/lib/utils';
 
 import {
   mintPKPUsingEthWallet,
   pkpSignTx,
 } from "../utils";
-
-// import {handleFund, handleButtonClick,Fundpkp} from "./Fundpkp"
-
 import Fundpkp from './Fundpkp';
 import FileUpload from './FileUpload';
 // import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
@@ -33,8 +28,7 @@ import {main} from "../galadriel-functions/sendintent";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import { LitNodeClient } from "@lit-protocol/lit-node-client";
 import { AuthMethodScope, LitNetwork } from "@lit-protocol/constants";
-
-
+import {uploadFile , transferNft} from "../services/api";
 
 function WalletView({
   wallet,
@@ -61,12 +55,14 @@ function WalletView({
   const [fundpkpComplete, setFundpkpComplete] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [fileUrl, setFileUrl] = useState(null);
+  const [tokenId, setTokenId] = useState(null);
 
   // Add these state variables to your existing useState hooks
 const [file, setFile] = useState(null);
 const [cid, setCid] = useState('');
 const [encrypted, setEncrypted] = useState(false);
 const [decryptCid, setDecryptCid] = useState(null);
+
 
   const handleChange = (e) => { 
     setValue(e.target.value);
@@ -76,7 +72,6 @@ const [decryptCid, setDecryptCid] = useState(null);
     setFile(e.target.files[0]); // Get the first selected file
   };
   
-
   const doSomething = async () => {
     try {
       const intent1 = value;  // Use the input value entered by the user
@@ -132,12 +127,20 @@ const [decryptCid, setDecryptCid] = useState(null);
       else if (intent === "MintNFT" || intent === "mintNFT" || intent === "mint_nft" || intent === "mint_NFT") {
           await mintNFTCrossChain();
       }
-      else if (intent === "encrypt" || intent === "encrypt_file" || intent === "encryptFile" || "EncryptFile"){
-        if (!file) {
-          alert("Please select a file to encrypt.");
-          return;
-        }
-        await handleEncrypt(file);
+      // else if (intent === "encrypt" || intent === "encrypt_file" || intent === "encryptFile" || "EncryptFile"){
+      //   if (!file) {
+      //     alert("Please select a file to encrypt.");
+      //     return;
+      //   }
+      //   await handleEncrypt(file);
+      // }
+      else if(intent === "tokenizeRWA" || intent === 'tokenize' ||  intent === "tokenize_real_world_assets" || intent === "Tokenize") {
+            await uploadFile(file);
+      }
+      else if (intent === "transferRWA" || intent === "transfer" || intent === "tokenize_rwa" || intent === "tokenizeRealWorldAssets") {
+        console.log("transfering rwa")
+        await transferNft(address, "1");
+        console.log("transferd rwa")
       }
       else {
         console.log("No valid action extracted from the prompt.");
@@ -173,155 +176,184 @@ const [decryptCid, setDecryptCid] = useState(null);
   //for encryption and upload to ipfs 
 
   
- const handleEncrypt = async (fileToEncrypt) => {
-  try {
-    setProcessing(true);
+//  const handleEncrypt = async (fileToEncrypt) => {
+//   try {
+//     setProcessing(true);
 
-    // Connect to Lit Protocol
-    const client = new LitNodeClient({
-      litNetwork: 'cayenne',
-      debug: false
-    });
-    await client.connect();
-    console.log('Connected to Lit Network', client);
+//     // Connect to Lit Protocol
+//     const client = new LitNodeClient({
+//       litNetwork: 'cayenne',
+//       debug: false
+//     });
+//     await client.connect();
+//     console.log('Connected to Lit Network', client);
 
-    // Authenticate with Lit Protocol
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
-    console.log('Auth Signature:', authSig);
+//     // Authenticate with Lit Protocol
+//     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
+//     console.log('Auth Signature:', authSig);
 
-    // Define Access Control Conditions (Customize as needed)
-    const accs = [
-      {
-        contractAddress: '',
-        standardContractType: '',
-        chain: 'ethereum',
-        method: 'eth_getBalance',
-        parameters: [':userAddress', 'latest'],
-        returnValueTest: {
-          comparator: '>=',
-          value: '0',
-        },
-      },
-    ];
+//     // Define Access Control Conditions (Customize as needed)
+//     const accs = [
+//       {
+//         contractAddress: '',
+//         standardContractType: '',
+//         chain: 'ethereum',
+//         method: 'eth_getBalance',
+//         parameters: [':userAddress', 'latest'],
+//         returnValueTest: {
+//           comparator: '>=',
+//           value: '0',
+//         },
+//       },
+//     ];
 
-    // Encrypt the file
-    const encryptedZip = await LitJsSdk.encryptFileAndZipWithMetadata({
-      accessControlConditions: accs,
-      authSig,
-      chain: 'ethereum',
-      file: fileToEncrypt,
-      litNodeClient: client,
-      readme: "Use IPFS CID of this file to decrypt it"
-    });
+//     // Encrypt the file
+//     const encryptedZip = await LitJsSdk.encryptFileAndZipWithMetadata({
+//       accessControlConditions: accs,
+//       authSig,
+//       chain: 'ethereum',
+//       file: fileToEncrypt,
+//       litNodeClient: client,
+//       readme: "Use IPFS CID of this file to decrypt it"
+//     });
 
-    const encryptedBlob = new Blob([encryptedZip], { type: 'application/zip' });
-    const encryptedFile = new File([encryptedBlob], `${fileToEncrypt.name}.encrypted.zip`);
-    console.log("Encrypted file:", encryptedFile);
+//     const encryptedBlob = new Blob([encryptedZip], { type: 'application/zip' });
+//     const encryptedFile = new File([encryptedBlob], `${fileToEncrypt.name}.encrypted.zip`);
+//     console.log("Encrypted file:", encryptedFile);
 
-    // Upload to IPFS via Pinata
-    const formData = new FormData();
-    formData.append('file', encryptedFile);
+//     // Upload to IPFS via Pinata
+//     const formData = new FormData();
+//     formData.append('file', encryptedFile);
 
-    const metadata = JSON.stringify({
-      name: encryptedFile.name,
-    });
-    formData.append('pinataMetadata', metadata);
+//     const metadata = JSON.stringify({
+//       name: encryptedFile.name,
+//     });
+//     formData.append('pinataMetadata', metadata);
 
-    const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
-      maxBodyLength: 'Infinity',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
-        pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET_API_KEY,
-      },
-    });
+//     const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+//       maxBodyLength: 'Infinity',
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//         pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+//         pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET_API_KEY,
+//       },
+//     });
 
-    const ipfsHash = res.data.IpfsHash;
-    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
-    setCid(ipfsHash);
-    setFileUrl(ipfsUrl);
-    setEncrypted(true);
-    console.log('Encrypted File uploaded to IPFS via Pinata:', ipfsUrl);
+//     const ipfsHash = res.data.IpfsHash;
+//     const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+//     setCid(ipfsHash);
+//     setFileUrl(ipfsUrl);
+//     setEncrypted(true);
+//     console.log('Encrypted File uploaded to IPFS via Pinata:', ipfsUrl);
 
-    setProcessing(false);
-    alert(`File encrypted and uploaded successfully! CID: ${ipfsHash}`);
+//     setProcessing(false);
+//     alert(`File encrypted and uploaded successfully! CID: ${ipfsHash}`);
 
-  } catch (error) {
-    console.error('Error during encryption and upload:', error);
-    setProcessing(false);
-    alert("Error during encryption and upload: " + error.message);
-  }
-};
-
-
-const handleDecrypt = async (cidToDecrypt) => {
-  try {
-    setProcessing(true);
-
-    // Connect to Lit Protocol
-    const client = new LitJsSdk.LitNodeClient({
-      litNetwork: 'cayenne',
-      debug: false
-    });
-    await client.connect();
-    console.log('Connected to Lit Network', client);
-
-    // Authenticate with Lit Protocol
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
-    console.log('Auth Signature:', authSig);
-
-    // Fetch the encrypted file from IPFS
-    const response = await fetch(`https://gateway.pinata.cloud/ipfs/${cidToDecrypt}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch file from IPFS');
-    }
-    const encryptedBlob = await response.blob();
-    const encryptedFile = new File([encryptedBlob], `decrypted.zip`);
-
-    // Define Access Control Conditions (Must match encryption conditions)
-    const accs = [
-      {
-        contractAddress: '',
-        standardContractType: '',
-        chain: 'ethereum',
-        method: 'eth_getBalance',
-        parameters: [':userAddress', 'latest'],
-        returnValueTest: {
-          comparator: '>=',
-          value: '0',
-        },
-      },
-    ];
-
-    // Decrypt the file
-    const { decryptedFile, metadata } = await LitJsSdk.decryptZipFileWithMetadata({
-      accessControlConditions: accs,
-      chain: 'ethereum',
-      file: encryptedFile,
-      litNodeClient: client,
-      decryptCid: cidToDecrypt,
-      authSig
-    });
-
-    // Create a download link for the decrypted file
-    const blob = new Blob([decryptedFile], { type: 'application/octet-stream' });
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = metadata.name;
-    downloadLink.click();
-
-    setProcessing(false);
-    alert('File decrypted successfully!');
-
-  } catch (error) {
-    console.error('Error during decryption:', error);
-    setProcessing(false);
-    alert("Error during decryption: " + error.message);
-  }
-};
+//   } catch (error) {
+//     console.error('Error during encryption and upload:', error);
+//     setProcessing(false);
+//     alert("Error during encryption and upload: " + error.message);
+//   }
+// };
 
 
+// const handleDecrypt = async (cidToDecrypt) => {
+//   try {
+//     setProcessing(true);
 
+//     // Connect to Lit Protocol
+//     const client = new LitJsSdk.LitNodeClient({
+//       litNetwork: 'cayenne',
+//       debug: false
+//     });
+//     await client.connect();
+//     console.log('Connected to Lit Network', client);
+
+//     // Authenticate with Lit Protocol
+//     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' });
+//     console.log('Auth Signature:', authSig);
+
+//     // Fetch the encrypted file from IPFS
+//     const response = await fetch(`https://gateway.pinata.cloud/ipfs/${cidToDecrypt}`);
+//     if (!response.ok) {
+//       throw new Error('Failed to fetch file from IPFS');
+//     }
+//     const encryptedBlob = await response.blob();
+//     const encryptedFile = new File([encryptedBlob], `decrypted.zip`);
+
+//     // Define Access Control Conditions (Must match encryption conditions)
+//     const accs = [
+//       {
+//         contractAddress: '',
+//         standardContractType: '',
+//         chain: 'ethereum',
+//         method: 'eth_getBalance',
+//         parameters: [':userAddress', 'latest'],
+//         returnValueTest: {
+//           comparator: '>=',
+//           value: '0',
+//         },
+//       },
+//     ];
+
+//     // Decrypt the file
+//     const { decryptedFile, metadata } = await LitJsSdk.decryptZipFileWithMetadata({
+//       accessControlConditions: accs,
+//       chain: 'ethereum',
+//       file: encryptedFile,
+//       litNodeClient: client,
+//       decryptCid: cidToDecrypt,
+//       authSig
+//     });
+
+//     // Create a download link for the decrypted file
+//     const blob = new Blob([decryptedFile], { type: 'application/octet-stream' });
+//     const downloadLink = document.createElement('a');
+//     downloadLink.href = URL.createObjectURL(blob);
+//     downloadLink.download = metadata.name;
+//     downloadLink.click();
+
+//     setProcessing(false);
+//     alert('File decrypted successfully!');
+
+//   } catch (error) {
+//     console.error('Error during decryption:', error);
+//     setProcessing(false);
+//     alert("Error during decryption: " + error.message);
+//   }
+// };
+
+
+//tokenizatation part
+// async function uploadToIpfsAndMintNft(file) {
+//   try {
+//     const formData = new FormData();
+//     formData.append('file', file); // Use the correct file object
+
+//     const metadata = JSON.stringify({
+//       name: file.name || 'Unnamed File',
+//     });
+//     formData.append('pinataMetadata', metadata);
+
+//     const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+//       maxBodyLength: 'Infinity',
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//         pinata_api_key: process.env.REACT_APP_PINATA_API_KEY,
+//         pinata_secret_api_key: process.env.REACT_APP_PINATA_SECRET_API_KEY,
+//       },
+//     });
+
+//     const ipfsHash = res.data.IpfsHash;
+//     console.log(`IPFS Hash: ${ipfsHash}`);
+
+//     // Mint the NFT using the IPFS hash as metadata
+//     await mintNftWithMetadata(ipfsHash);
+//   } catch (err) {
+//     console.error("Error uploading to IPFS and minting NFT:", err);
+//     throw err;
+//   }
+// }
 
 
   const items = [
@@ -440,9 +472,9 @@ const handleDecrypt = async (cidToDecrypt) => {
       value={decryptCid}
       onChange={(e) => setDecryptCid(e.target.value)}
     />
-    <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
+    {/* <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
       Decrypt
-    </Button>
+    </Button> */}
     {fileUrl && (
       <div>
         <h4>Encrypted File URL:</h4>
@@ -464,9 +496,9 @@ const handleDecrypt = async (cidToDecrypt) => {
       value={decryptCid}
       onChange={(e) => setDecryptCid(e.target.value)}
     />
-    <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
+    {/* <Button onClick={() => handleDecrypt(decryptCid)} disabled={!decryptCid}>
       Decrypt
-    </Button>
+    </Button> */}
     {fileUrl && (
       <div>
         <h4>Encrypted File URL:</h4>
