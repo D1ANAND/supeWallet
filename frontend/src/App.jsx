@@ -11,7 +11,7 @@ import WalletView from "./components/WalletView";
 function App() {
   const [wallet, setWallet] = useState(null);
   const [seedPhrase, setSeedPhrase] = useState(null);
-  const [selectedChain, setSelectedChain] = useState("0xaa36a7");
+  const [selectedChain, setSelectedChain] = useState("0x61");
   const [ethAddress, setEthAddress] = useState("");
   
   

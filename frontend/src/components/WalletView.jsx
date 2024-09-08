@@ -550,8 +550,6 @@ function WalletView({
           )}
           {encrypted && (
             <div>
-              <h4>Encrypted File CID:</h4>
-              <p>{cid}</p>
               {/* <a
                 href={`https://gateway.pinata.cloud/ipfs/${cid}`}
                 target="_blank"
@@ -559,8 +557,8 @@ function WalletView({
               >
                 View Encrypted File
               </a> */}
-            </div>
-          )}
+            </div>)
+            }
 
           {processing && (
             <>

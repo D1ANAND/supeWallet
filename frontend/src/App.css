@@ -55,6 +55,8 @@ header {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  margin-left:1100px;
+  margin-top:20px;
 }
 
 .headerLogo {
@@ -76,6 +78,8 @@ header {
   display: flex;
   flex-direction: column;
   position: relative;
+  margin-left:1100px;
+  margin-top:20px;
 }
 
 .mnemonic {
