@@ -146,7 +146,7 @@ export async function mintNFTCrossChain() {
     console.log('Transaction Hash:', tx.hash);
     // const notify = () => toast("tx hash",tx.hash);
     // notify();
-    alert("Transaction hash:",tx.hash);
+    alert(tx.hash);
 
     // Optionally, add a delay to ensure the transaction is processed by CCIP
     // await new Promise(resolve => setTimeout(resolve, 60000)); // 1 minute delay

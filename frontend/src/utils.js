@@ -101,7 +101,7 @@ export async function transferPKPToItself() {
 }
 
 
-export async function fundPKP() {
+export async function fundPKP(value){
     console.log("funding started..");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const ethersSigner = provider.getSigner();

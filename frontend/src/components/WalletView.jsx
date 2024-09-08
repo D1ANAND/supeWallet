@@ -18,8 +18,6 @@ import { ethers } from "ethers";
 
 import { mintPKPUsingEthWallet,fundPKP, pkpSignTx } from "../utils";
 import Fundpkp from "./Fundpkp";
-import FileUpload from "./FileUpload";
-// import { main } from "../galadriel-contracts/examples/sendcryptointentAgent/sendintent";
 import { mintNFTCrossChain } from "../utils1";
 import { main } from "../galadriel-functions/sendintent";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
@@ -27,7 +25,6 @@ import { LitNodeClient } from "@lit-protocol/lit-node-client";
 import { AuthMethodScope, LitNetwork } from "@lit-protocol/constants";
 import { uploadFile, transferNft } from "../services/api";
 import {sendTransaction }from "./SendTransaction";
-import { ToastContainer, toast } from 'react-toastify';
 import { HiOutlineUpload } from "react-icons/hi";
 
 function WalletView({
@@ -146,9 +143,6 @@ function WalletView({
         setLoading(true);
         await mintNFTCrossChain();
         setLoading(false);
-        const notify = () => toast("minting Successfull");
-        notify();
-        <ToastContainer />
       } else if (
         intent === "encrypt" ||
         intent === "encrypt_file" ||
@@ -162,8 +156,6 @@ function WalletView({
         setLoading(true);
         await handleEncrypt(file);
         setLoading(false);
-        const notify = () => toast("Encryted Successfully");
-        notify();
       } else if (
         intent === "tokenizeRWA" ||
         intent === "tokenize" ||
@@ -173,8 +165,6 @@ function WalletView({
         setLoading(true);
         await uploadFile(file);
         setLoading(false);
-        const notify = () => toast("Tokenized RWA");
-        notify();
         alert("Account Id",address);
       } else if (
         intent === "transferRWA" ||
@@ -185,8 +175,6 @@ function WalletView({
         setLoading(true);
         await transferNft(address, "1");
         setLoading(false);
-        const notify = () => toast("Transfer RWA Successfully");
-        notify();
       } else {
         console.log("No valid action extracted from the prompt.");
       }
@@ -560,8 +548,6 @@ function WalletView({
             Send The prompt
           </Button>
           )}
-          <ToastContainer />
-
           {encrypted && (
             <div>
               <h4>Encrypted File CID:</h4>
