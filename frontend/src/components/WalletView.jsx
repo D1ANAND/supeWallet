@@ -76,6 +76,7 @@ function WalletView({
     try {
       const intent1 = value; // Use the input value entered by the user
       if (!intent1) {
+        alert("please enter a prompt");
         console.log("Please enter a prompt");
         return;
       }

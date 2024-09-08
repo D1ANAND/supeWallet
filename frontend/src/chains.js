@@ -30,7 +30,21 @@ const Sepolia = {
     hex:'0xaa36a7',
     name:'Ethereum Sepolia',
     rpcUrl: 'https://rpc.sepolia.org/',
-    ticker:"SepoliaETH"
+    ticker:"ETH"
+};
+
+const BNBChain = {
+    hex: '0x61',
+    name: 'BNB Chain',
+    rpcUrl: 'https://bsc-dataseed.binance.org/',
+    ticker: "tBNB"
+};
+
+const Avalanche = {
+    hex: '0xa869',
+    name: 'Avalanche Fuji Testnet',
+    rpcUrl: 'https://avalanche-fuji.blockpi.network/v1/rpc/public	',
+    ticker: "AVAX"
 };
 
 export const CHAINS_CONFIG = {
@@ -38,4 +52,7 @@ export const CHAINS_CONFIG = {
     "0x13881": MumbaiTestnet,
     "0x13882": Amoy,
     "0x2ac49" : ChronicleLitProtocolTestnet,
+    "0xaa36a7": Sepolia,
+    "0x61": BNBChain,
+    "0xa869": Avalanche
 };

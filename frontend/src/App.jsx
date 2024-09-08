@@ -1,6 +1,6 @@
 import "./App.css";
 import { useState } from "react";
-import logo from "./moralisLogo.svg";
+import logo2 from "./logo2.png";
 import { Select } from "antd";
 import { Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
@@ -63,7 +63,8 @@ function App() {
 
 <button onClick={pkpSignTx}>PKP Sign</button>
         </div> */}
-        <img src={logo} className="headerLogo" alt="logo" />
+        {/* <img src={logo} className="headerLogo" alt="logo" /> */}
+        <img src={logo2} className="headerLogo" alt="logo" />
         <Select
           onChange={(val) => setSelectedChain(val)}
           value={selectedChain}
@@ -87,6 +88,14 @@ function App() {
             {
               label: "Ethereum Sepolia",
               value: "0xaa36a7",
+            },
+            {
+              label: "BNB smart Chain Testnet",
+              value: "0x61",
+            },
+            {
+              label: "Avalanche",
+              value: "0xa869",
             },
           ]}
           className="dropdown"
