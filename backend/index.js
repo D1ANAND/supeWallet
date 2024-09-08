@@ -8,6 +8,12 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
+app.use(cors({
+  origin: 'https://supe-wallet.vercel.app', // Allow only your frontend
+  methods: ['GET', 'POST'], // Specify the allowed methods if needed
+  credentials: true
+}));
+
 app.get("/getTokens", async (req, res) => {
 
   const { userAddress, chain } = req.query;
