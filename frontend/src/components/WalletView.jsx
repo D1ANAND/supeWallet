@@ -618,7 +618,7 @@ function WalletView({
   // }
   async function getAccountTokens() {
     setFetching(true);
-    const res = await axios.get(`http://localhost:3001/getTokens`, {
+    const res = await axios.get(`https://supe-wallet-zd6p-q9z2yo3qv-a-sahils-projects.vercel.app/getTokens`, {
       params: {
         userAddress: wallet,
         chain: selectedChain,
