@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000'; // Ensure this matches your backend URL
+const API_URL = 'http://localhost:3000'; 
 export let tokenId;
 const serialNumber ="1";
 
@@ -13,10 +13,10 @@ export const uploadFile = async (file) => {
     tokenId = response.data.tokenId
     console.log(tokenId)
     console.log("tokenId",response.data.tokenId);
-    return response; // Return the full response object
+    return response; 
   } catch (error) {
     console.error('Upload error:', error);
-    throw error; // Rethrow error for proper handling
+    throw error;
   }
 };
 
@@ -28,8 +28,8 @@ export const transferNft = async (tokenId, serialNumber) => {
     console.log(response);
     return response.data;
   } catch (error) {
-    console.error('Transfer error:', error.response || error);  // Log detailed error
-    throw error;  // Rethrow to handle in the UI
+    console.error('Transfer error:', error.response || error);  
+    throw error;  
   }
 };
 

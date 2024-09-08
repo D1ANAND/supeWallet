@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { MyNFTABI, SourceMinterABI, DestinationMinterABI } from "./config";
+import { ToastContainer, toast } from 'react-toastify';
 
 
 import web3Modal from "web3modal";
@@ -143,6 +144,9 @@ export async function mintNFTCrossChain() {
 
     // Log the transaction hash
     console.log('Transaction Hash:', tx.hash);
+    // const notify = () => toast("tx hash",tx.hash);
+    // notify();
+    alert("Transaction hash:",tx.hash);
 
     // Optionally, add a delay to ensure the transaction is processed by CCIP
     // await new Promise(resolve => setTimeout(resolve, 60000)); // 1 minute delay
